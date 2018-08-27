@@ -70,7 +70,7 @@ class HTTPClient
     def to_s # :nodoc:
       addr
     end
-    
+
     # Returns true if scheme, host and port of the given URI matches with this.
     def match(uri)
       (@scheme == uri.scheme) and (@host == uri.host) and (@port == uri.port.to_i)
@@ -613,7 +613,7 @@ class HTTPClient
       # Use absolute URI (not absolute path) iif via proxy AND not HTTPS.
       req.header.request_absolute_uri = !@proxy.nil? && !https?(@dest)
       begin
-        timeout(@send_timeout, SendTimeoutError) do
+        ::Timeout.timeout(@send_timeout, SendTimeoutError) do
           set_header(req)
           req.dump(@socket)
           # flush the IO stream as IO::sync mode is false
@@ -743,7 +743,7 @@ class HTTPClient
       site = @proxy || @dest
       retry_number = 0
       begin
-        timeout(@connect_timeout, ConnectTimeoutError) do
+        ::Timeout.timeout(@connect_timeout, ConnectTimeoutError) do
           @socket = create_socket(site)
           if https?(@dest)
             if @socket.is_a?(LoopBackSocket)
@@ -869,7 +869,7 @@ class HTTPClient
 
     StatusParseRegexp = %r(\AHTTP/(\d+\.\d+)\s+(\d\d\d)\s*([^\r\n]+)?\r?\n\z)
     def parse_header
-      timeout(@receive_timeout, ReceiveTimeoutError) do
+      ::Timeout.timeout(@receive_timeout, ReceiveTimeoutError) do
         initial_line = nil
         begin
           begin
@@ -947,7 +947,7 @@ class HTTPClient
         buf = empty_bin_str
         maxbytes = @read_block_size
         maxbytes = @content_length if maxbytes > @content_length && @content_length > 0
-        timeout(@receive_timeout, ReceiveTimeoutError) do
+        ::Timeout.timeout(@receive_timeout, ReceiveTimeoutError) do
           begin
             @socket.readpartial(maxbytes, buf)
           rescue EOFError
@@ -980,7 +980,7 @@ class HTTPClient
           @socket.gets(RS)
           return
         end
-        timeout(@receive_timeout, ReceiveTimeoutError) do
+        ::Timeout.timeout(@receive_timeout, ReceiveTimeoutError) do
           @socket.read(@chunk_length, buf)
           @socket.read(2)
         end
@@ -997,7 +997,7 @@ class HTTPClient
       end
       while true
         buf = empty_bin_str
-        timeout(@receive_timeout, ReceiveTimeoutError) do
+        ::Timeout.timeout(@receive_timeout, ReceiveTimeoutError) do
           begin
             @socket.readpartial(@read_block_size, buf)
           rescue EOFError
